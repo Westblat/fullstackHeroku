@@ -9,11 +9,10 @@ const app = express()
 
 app.use(express.static('build'))
 app.use(express.json())
-morgan.token('body', (req, res) => JSON.stringify(req.body));
-app.use(morgan(':method :url :status :response-time ms - :res[content-length] :body - :req[content-length]'));
+morgan.token('body', (req) => JSON.stringify(req.body))
+app.use(morgan(':method :url :status :response-time ms - :res[content-length] :body - :req[content-length]'))
 app.use(cors())
 
-const opts = { runValidators: true };
 //----------------------------------------------------------------------------------------------
 
 app.get('/info', (req, res) => {
@@ -34,7 +33,7 @@ app.post('/api/persons/', (req, res, next) => {
     const data = req.body
 
     const dude = new Person(data)
-    dude.save().then(response => {
+    dude.save().then(() => {
         res.json(dude)
     })
         .catch(error => next(error))
@@ -51,8 +50,8 @@ app.get('/api/persons/:id', (req, res, next) => {
 
 app.put('/api/persons/:id', (req, res, next) => {
     // We could also allow name updates, but we are boring
-    const data = {number: req.body.number}
-    Person.findByIdAndUpdate(req.params.id, data, {new:true, runValidators: true}).then(result => {
+    const data = { number: req.body.number }
+    Person.findByIdAndUpdate(req.params.id, data, { new:true, runValidators: true }).then(result => {
         res.json(result)
     })
         .catch(error => next(error))
@@ -60,7 +59,7 @@ app.put('/api/persons/:id', (req, res, next) => {
 
 app.delete('/api/persons/:id', (req, res, next) => {
     Person.findByIdAndRemove(req.params.id)
-        .then(response => {
+        .then(() => {
             res.status(204).end()
         })
         .catch(error => next(error))
@@ -76,11 +75,11 @@ const errorHandler = (error, request, response, next) => {
 
     switch (error.name) {
 
-        case 'CastError':
-            return response.status(400).send({ error: 'There was a problem with id' })
+    case 'CastError':
+        return response.status(400).send({ error: 'There was a problem with id' })
 
-        case 'ValidationError':
-            return response.status(400).send({error: error.message})
+    case 'ValidationError':
+        return response.status(400).send({ error: error.message })
     }
 
     next(error)
